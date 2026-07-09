@@ -15,6 +15,7 @@ import { MovieListItem } from "./MovieListItem";
 import { FilterPanel } from "./FilterPanel";
 
 const PAGE = 60;
+const STORAGE_KEY = "goodmovies.gallery.v1";
 type View = "list" | "cards";
 
 function sortVal(m: Movie, field: SortField): number | null {
@@ -83,6 +84,32 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
       document.body.style.overflow = "";
     };
   }, [filtersOpen]);
+
+  // Retain filters/view/scroll across navigation (e.g. opening a movie and
+  // coming back). Stored per browser tab in sessionStorage.
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.filters) setFilters((f) => ({ ...f, ...saved.filters }));
+        if (saved.view) setView(saved.view);
+        if (typeof saved.visible === "number") setVisible(saved.visible);
+      }
+    } catch {
+      /* ignore malformed state */
+    }
+    setRestored(true);
+  }, []);
+  useEffect(() => {
+    if (!restored) return; // don't overwrite saved state before it's restored
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ filters, view, visible }));
+    } catch {
+      /* storage may be unavailable (private mode) */
+    }
+  }, [filters, view, visible, restored]);
 
   const imdbActive = filters.imdbMin > BOUNDS.imdb.min || filters.imdbMax < BOUNDS.imdb.max;
   const rtCriticsActive =
@@ -167,24 +194,28 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
         />
       </div>
 
-      {/* Controls */}
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-neutral-500">
-        <div className="flex items-center gap-3">
+      {/* Controls (single line, even on mobile) */}
+      <div className="mb-3 flex flex-nowrap items-center justify-between gap-2 text-sm text-neutral-500">
+        <div className="flex min-w-0 items-center gap-2">
           <button
             onClick={() => setFiltersOpen(true)}
-            className="flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-1.5 font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            className="flex shrink-0 items-center gap-1.5 rounded-md border border-neutral-300 px-2.5 py-1.5 font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
           >
-            <span aria-hidden>☰</span> Filters
+            <span aria-hidden>☰</span>
+            <span className="hidden sm:inline">Filters</span>
             {activeCount > 0 && (
               <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">
                 {activeCount}
               </span>
             )}
           </button>
-          <span>{filtered.length.toLocaleString()} result(s)</span>
+          <span className="truncate whitespace-nowrap">
+            <span className="tabular-nums">{filtered.length.toLocaleString()}</span>
+            <span className="hidden sm:inline"> result(s)</span>
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           {/* View toggle (icons) */}
           <div className="flex overflow-hidden rounded-md border border-neutral-300 dark:border-neutral-700">
             <button
