@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { displayName } from "@/lib/user";
 import { RecommendationsFeed } from "@/components/RecommendationsFeed";
 
 // Per-user page — never statically prerendered.
@@ -33,19 +34,28 @@ const CARDS = [
 ];
 
 export default async function DashboardPage() {
-  let email = "";
+  let name = "";
+  let isAdmin = false;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     const supabase = createClient();
     const {
       data: { user }
     } = await supabase.auth.getUser();
-    email = user?.email ?? "";
+    name = user ? displayName(user) : "";
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+      isAdmin = Boolean(profile?.is_admin);
+    }
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight">Members area</h1>
-      <p className="text-sm text-neutral-500">Signed in as {email || "a member"}.</p>
+      <p className="text-sm text-neutral-500">Signed in as {name || "a member"}.</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {CARDS.map((c) => (
@@ -66,6 +76,21 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {isAdmin && (
+        <Link
+          href="/admin"
+          className="mt-4 flex items-center justify-between rounded-xl border border-amber-300 bg-amber-50 p-5 transition hover:shadow-sm dark:border-amber-800 dark:bg-amber-950/30"
+        >
+          <div>
+            <h2 className="font-semibold">Admin · review queue</h2>
+            <p className="mt-1 text-sm text-neutral-500">
+              View and action proposed films and reported movies.
+            </p>
+          </div>
+          <span aria-hidden>→</span>
+        </Link>
+      )}
 
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-bold tracking-tight">Shared with you</h2>

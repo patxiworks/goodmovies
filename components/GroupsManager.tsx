@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { displayName } from "@/lib/user";
 import { MAX_GROUPS, type Group, type GroupMember, type MembershipWithGroup } from "@/lib/types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,7 +77,9 @@ export function GroupsManager() {
       data: { user }
     } = await supabase.auth.getUser();
     if (!user) return;
-    const { error } = await supabase.from("groups").insert({ owner_id: user.id, name });
+    const { error } = await supabase
+      .from("groups")
+      .insert({ owner_id: user.id, name, owner_name: displayName(user) });
     if (error) setError(error.message);
     else {
       setNewName("");
@@ -109,6 +112,13 @@ export function GroupsManager() {
 
   async function removeMember(memberId: string) {
     const { error } = await supabase.from("group_members").delete().eq("id", memberId);
+    if (error) setError(error.message);
+    else load();
+  }
+
+  async function leaveGroup(membershipId: string, name: string) {
+    if (!confirm(`Leave "${name}"? You'll stop seeing its recommendations.`)) return;
+    const { error } = await supabase.from("group_members").delete().eq("id", membershipId);
     if (error) setError(error.message);
     else load();
   }
@@ -220,10 +230,20 @@ export function GroupsManager() {
             {memberOf.map((m) => (
               <li
                 key={m.id}
-                className="rounded-lg border border-neutral-200 px-4 py-3 dark:border-neutral-800"
+                className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 px-4 py-3 dark:border-neutral-800"
               >
-                {m.groups?.name ?? "A group"}{" "}
-                <span className="text-xs text-neutral-400">· shared with you</span>
+                <span>
+                  {m.groups?.name ?? "A group"}
+                  {m.groups?.owner_name && (
+                    <span className="text-xs text-neutral-400"> · by {m.groups.owner_name}</span>
+                  )}
+                </span>
+                <button
+                  onClick={() => leaveGroup(m.id, m.groups?.name ?? "this group")}
+                  className="shrink-0 text-xs text-neutral-500 hover:text-red-600"
+                >
+                  Leave
+                </button>
               </li>
             ))}
           </ul>

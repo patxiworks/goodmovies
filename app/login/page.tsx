@@ -13,6 +13,7 @@ function LoginForm() {
 
   const [method, setMethod] = useState<Method>("password");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,11 +32,19 @@ function LoginForm() {
       setError("Enter an email and a password of at least 6 characters.");
       return;
     }
+    if (mode === "signup" && username.trim().length < 2) {
+      setError("Choose a username (at least 2 characters).");
+      return;
+    }
     setBusy(true);
     const supabase = createClient();
     const res =
       mode === "signup"
-        ? await supabase.auth.signUp({ email, password })
+        ? await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { username: username.trim() } }
+          })
         : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
 
@@ -62,7 +71,10 @@ function LoginForm() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: redirectTo }
+      options: {
+        emailRedirectTo: redirectTo,
+        data: username.trim() ? { username: username.trim() } : undefined
+      }
     });
     setBusy(false);
     if (error) setError(error.message);
@@ -86,20 +98,24 @@ function LoginForm() {
         Members can propose films, report issues and recommend to their groups.
       </p>
 
-      {/* method tabs */}
-      <div className="mt-4 flex rounded-md border border-neutral-200 p-0.5 text-sm dark:border-neutral-800">
+      {/* method tabs (neutral, distinct from the purple submit buttons) */}
+      <div className="mt-4 flex rounded-md bg-neutral-100 p-0.5 text-sm dark:bg-neutral-800">
         <button
           onClick={() => setMethod("password")}
-          className={`flex-1 rounded px-3 py-1.5 ${
-            method === "password" ? "bg-brand text-white" : "text-neutral-500"
+          className={`flex-1 rounded px-3 py-1.5 transition ${
+            method === "password"
+              ? "bg-neutral-300 font-medium text-neutral-900 dark:bg-neutral-600 dark:text-white"
+              : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
           }`}
         >
           Password
         </button>
         <button
           onClick={() => setMethod("magic")}
-          className={`flex-1 rounded px-3 py-1.5 ${
-            method === "magic" ? "bg-brand text-white" : "text-neutral-500"
+          className={`flex-1 rounded px-3 py-1.5 transition ${
+            method === "magic"
+              ? "bg-neutral-300 font-medium text-neutral-900 dark:bg-neutral-600 dark:text-white"
+              : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
           }`}
         >
           Email link
@@ -113,6 +129,15 @@ function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
+          className="w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+        />
+
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username (for new accounts)"
+          autoComplete="username"
           className="w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         />
 

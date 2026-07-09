@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
+import { displayName } from "@/lib/user";
 import { AuthButton } from "@/components/AuthButton";
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let email: string | null = null;
+  let name: string | null = null;
   // Guard: Supabase may not be configured yet during initial setup.
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     try {
@@ -22,9 +23,9 @@ export default async function RootLayout({
       const {
         data: { user }
       } = await supabase.auth.getUser();
-      email = user?.email ?? null;
+      name = user ? displayName(user) : null;
     } catch {
-      email = null;
+      name = null;
     }
   }
 
@@ -43,7 +44,7 @@ export default async function RootLayout({
               <Link href="/dashboard" className="hover:text-brand">
                 Members
               </Link>
-              <AuthButton email={email} />
+              <AuthButton name={name} />
             </nav>
           </div>
         </header>

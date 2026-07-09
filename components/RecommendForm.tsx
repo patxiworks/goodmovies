@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { displayName } from "@/lib/user";
 import type { Group } from "@/lib/types";
 
 export function RecommendForm({ movieId, title }: { movieId: number | null; title: string }) {
@@ -74,7 +75,7 @@ export function RecommendForm({ movieId, title }: { movieId: number | null; titl
 
     const { error } = await supabase.from("recommendations").insert({
       recommender_id: user.id,
-      recommender_name: user.email,
+      recommender_name: displayName(user),
       group_id: groupId,
       movie_id: movieId,
       movie_title: title,

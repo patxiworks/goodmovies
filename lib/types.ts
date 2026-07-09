@@ -93,6 +93,7 @@ export const BOUNDS = {
 export interface Group {
   id: string;
   owner_id: string;
+  owner_name: string | null;
   name: string;
   created_at: string;
 }
@@ -124,3 +125,20 @@ export interface Recommendation {
 }
 
 export const MAX_GROUPS = 5;
+
+export interface Proposal {
+  id: string;
+  title: string;
+  imdb_url: string;
+  status: string;
+  created_at: string;
+}
+
+export interface Report {
+  id: string;
+  movie_id: number;
+  movie_title: string | null;
+  reason: string;
+  status: string;
+  created_at: string;
+}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export function AuthButton({ email }: { email: string | null }) {
+export function AuthButton({ name }: { name: string | null }) {
   const router = useRouter();
 
   async function signOut() {
@@ -13,11 +13,11 @@ export function AuthButton({ email }: { email: string | null }) {
     router.refresh();
   }
 
-  if (email) {
+  if (name) {
     return (
       <div className="flex items-center gap-2">
         <span className="hidden max-w-[10rem] truncate text-neutral-500 sm:inline">
-          {email}
+          {name}
         </span>
         <button
           onClick={signOut}
