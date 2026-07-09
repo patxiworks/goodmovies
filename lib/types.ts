@@ -51,15 +51,25 @@ export interface Filters {
   yearMin: number | null;
   yearMax: number | null;
   imdbMin: number;
+  imdbMax: number;
   rtCriticsMin: number;
+  rtCriticsMax: number;
   rtAudienceMin: number;
+  rtAudienceMax: number;
   availableOnly: boolean;
   subtitledOnly: boolean;
   sortField: SortField;
   sortDir: SortDir;
 }
 
-export type SortField = "added" | "title" | "year" | "imdb" | "duration";
+export type SortField =
+  | "added"
+  | "title"
+  | "year"
+  | "imdb"
+  | "duration"
+  | "rt_critics"
+  | "rt_audience";
 export type SortDir = "asc" | "desc";
 
 export const SORT_LABELS: Record<SortField, string> = {
@@ -67,7 +77,15 @@ export const SORT_LABELS: Record<SortField, string> = {
   title: "Title",
   year: "Year",
   imdb: "IMDb",
-  duration: "Duration"
+  duration: "Duration",
+  rt_critics: "RT critics",
+  rt_audience: "RT audience"
+};
+
+/** Default (unfiltered) numeric bounds. */
+export const BOUNDS = {
+  imdb: { min: 0, max: 10, step: 0.1 },
+  rt: { min: 0, max: 100, step: 1 }
 };
 
 /* ---- Members' data (Supabase) ---- */

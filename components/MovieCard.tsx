@@ -8,7 +8,7 @@ function gradient(seed: string) {
   return `linear-gradient(135deg, hsl(${h} 55% 45%), hsl(${(h + 40) % 360} 55% 30%))`;
 }
 
-export function MovieCard({ movie, isNew }: { movie: Movie; isNew?: boolean }) {
+export function MovieCard({ movie }: { movie: Movie }) {
   const initials = (movie.Title ?? "?")
     .split(/\s+/)
     .slice(0, 2)
@@ -26,11 +26,6 @@ export function MovieCard({ movie, isNew }: { movie: Movie; isNew?: boolean }) {
         style={{ background: gradient(movie.Title ?? "") }}
       >
         <span className="select-none text-4xl font-black text-white/85">{initials}</span>
-        {isNew && (
-          <span className="absolute left-2 top-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">
-            New
-          </span>
-        )}
         {movie.Type && movie.Type !== "Movie" && (
           <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white">
             {movie.Type}

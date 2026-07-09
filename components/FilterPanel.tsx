@@ -1,6 +1,7 @@
 "use client";
 
-import type { Facets, Filters } from "@/lib/types";
+import { type Facets, type Filters, BOUNDS } from "@/lib/types";
+import { DualRange } from "./DualRange";
 
 export function FilterPanel({
   facets,
@@ -18,14 +19,16 @@ export function FilterPanel({
 
   function reset() {
     onChange({
-      search: "",
       type: "",
       genres: [],
       yearMin: null,
       yearMax: null,
-      imdbMin: 0,
-      rtCriticsMin: 0,
-      rtAudienceMin: 0,
+      imdbMin: BOUNDS.imdb.min,
+      imdbMax: BOUNDS.imdb.max,
+      rtCriticsMin: BOUNDS.rt.min,
+      rtCriticsMax: BOUNDS.rt.max,
+      rtAudienceMin: BOUNDS.rt.min,
+      rtAudienceMax: BOUNDS.rt.max,
       availableOnly: true,
       subtitledOnly: false
     });
@@ -33,17 +36,6 @@ export function FilterPanel({
 
   return (
     <aside className="space-y-5 text-sm">
-      <div>
-        <label className="mb-1 block font-medium">Search</label>
-        <input
-          type="search"
-          value={filters.search}
-          onChange={(e) => onChange({ search: e.target.value })}
-          placeholder="Title or actor…"
-          className="w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 dark:border-neutral-700"
-        />
-      </div>
-
       <div>
         <label className="mb-1 block font-medium">Type</label>
         <select
@@ -87,51 +79,54 @@ export function FilterPanel({
 
       <div>
         <label className="mb-1 flex justify-between font-medium">
-          <span>IMDb ≥</span>
-          <span className="text-brand">{filters.imdbMin.toFixed(1)}</span>
+          <span>IMDb</span>
+          <span className="text-brand">
+            {filters.imdbMin.toFixed(1)} – {filters.imdbMax.toFixed(1)}
+          </span>
         </label>
-        <input
-          type="range"
-          min={0}
-          max={10}
-          step={0.1}
-          value={filters.imdbMin}
-          onChange={(e) => onChange({ imdbMin: Number(e.target.value) })}
-          className="w-full"
+        <DualRange
+          min={BOUNDS.imdb.min}
+          max={BOUNDS.imdb.max}
+          step={BOUNDS.imdb.step}
+          low={filters.imdbMin}
+          high={filters.imdbMax}
+          onChange={(lo, hi) => onChange({ imdbMin: lo, imdbMax: hi })}
         />
       </div>
 
       <div>
         <span className="mb-1 block font-medium">Rotten Tomatoes</span>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div>
             <label className="mb-1 flex justify-between text-xs text-neutral-500">
-              <span>Critics ≥</span>
-              <span className="text-brand">{filters.rtCriticsMin}%</span>
+              <span>Critics</span>
+              <span className="text-brand">
+                {filters.rtCriticsMin}% – {filters.rtCriticsMax}%
+              </span>
             </label>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={filters.rtCriticsMin}
-              onChange={(e) => onChange({ rtCriticsMin: Number(e.target.value) })}
-              className="w-full"
+            <DualRange
+              min={BOUNDS.rt.min}
+              max={BOUNDS.rt.max}
+              step={BOUNDS.rt.step}
+              low={filters.rtCriticsMin}
+              high={filters.rtCriticsMax}
+              onChange={(lo, hi) => onChange({ rtCriticsMin: lo, rtCriticsMax: hi })}
             />
           </div>
           <div>
             <label className="mb-1 flex justify-between text-xs text-neutral-500">
-              <span>Audience ≥</span>
-              <span className="text-brand">{filters.rtAudienceMin}%</span>
+              <span>Audience</span>
+              <span className="text-brand">
+                {filters.rtAudienceMin}% – {filters.rtAudienceMax}%
+              </span>
             </label>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={filters.rtAudienceMin}
-              onChange={(e) => onChange({ rtAudienceMin: Number(e.target.value) })}
-              className="w-full"
+            <DualRange
+              min={BOUNDS.rt.min}
+              max={BOUNDS.rt.max}
+              step={BOUNDS.rt.step}
+              low={filters.rtAudienceMin}
+              high={filters.rtAudienceMax}
+              onChange={(lo, hi) => onChange({ rtAudienceMin: lo, rtAudienceMax: hi })}
             />
           </div>
         </div>

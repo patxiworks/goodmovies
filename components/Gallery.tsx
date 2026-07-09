@@ -6,7 +6,9 @@ import {
   type Facets,
   type Filters,
   type SortField,
-  SORT_LABELS
+  SORT_LABELS,
+  BOUNDS,
+  synopsisOf
 } from "@/lib/types";
 import { MovieCard } from "./MovieCard";
 import { MovieListItem } from "./MovieListItem";
@@ -25,21 +27,35 @@ function sortVal(m: Movie, field: SortField): number | null {
       return m.IMDb ?? null;
     case "duration":
       return m.Runtime_Min ?? null;
+    case "rt_critics":
+      return m.RT_Critics ?? null;
+    case "rt_audience":
+      return m.RT_Audience ?? null;
     default:
       return null;
   }
 }
 
-export function Gallery({
-  movies,
-  facets,
-  newIds
-}: {
-  movies: Movie[];
-  facets: Facets;
-  newIds: number[];
-}) {
-  const newIdSet = useMemo(() => new Set(newIds), [newIds]);
+/* Inline icons keep the toggles compact and dependency-free. */
+const IconList = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <line x1="2" y1="4" x2="14" y2="4" /><line x1="2" y1="8" x2="14" y2="8" /><line x1="2" y1="12" x2="14" y2="12" />
+  </svg>
+);
+const IconCards = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1" /><rect x="9" y="1.5" width="5.5" height="5.5" rx="1" />
+    <rect x="1.5" y="9" width="5.5" height="5.5" rx="1" /><rect x="9" y="9" width="5.5" height="5.5" rx="1" />
+  </svg>
+);
+const IconArrow = ({ up }: { up: boolean }) => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
+    style={{ transform: up ? "none" : "rotate(180deg)" }}>
+    <path d="M8 13 V3 M4 7 L8 3 L12 7" />
+  </svg>
+);
+
+export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets }) {
   const [visible, setVisible] = useState(PAGE);
   const [view, setView] = useState<View>("list");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -49,22 +65,30 @@ export function Gallery({
     genres: [],
     yearMin: null,
     yearMax: null,
-    imdbMin: 0,
-    rtCriticsMin: 0,
-    rtAudienceMin: 0,
+    imdbMin: BOUNDS.imdb.min,
+    imdbMax: BOUNDS.imdb.max,
+    rtCriticsMin: BOUNDS.rt.min,
+    rtCriticsMax: BOUNDS.rt.max,
+    rtAudienceMin: BOUNDS.rt.min,
+    rtAudienceMax: BOUNDS.rt.max,
     availableOnly: true,
     subtitledOnly: false,
     sortField: "added",
     sortDir: "desc"
   });
 
-  // Lock background scroll while the filter drawer is open.
   useEffect(() => {
     document.body.style.overflow = filtersOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [filtersOpen]);
+
+  const imdbActive = filters.imdbMin > BOUNDS.imdb.min || filters.imdbMax < BOUNDS.imdb.max;
+  const rtCriticsActive =
+    filters.rtCriticsMin > BOUNDS.rt.min || filters.rtCriticsMax < BOUNDS.rt.max;
+  const rtAudienceActive =
+    filters.rtAudienceMin > BOUNDS.rt.min || filters.rtAudienceMax < BOUNDS.rt.max;
 
   const filtered = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
@@ -77,11 +101,20 @@ export function Gallery({
         return false;
       if (filters.yearMin != null && (m.Year ?? -Infinity) < filters.yearMin) return false;
       if (filters.yearMax != null && (m.Year ?? Infinity) > filters.yearMax) return false;
-      if (filters.imdbMin > 0 && (m.IMDb ?? -1) < filters.imdbMin) return false;
-      if (filters.rtCriticsMin > 0 && (m.RT_Critics ?? -1) < filters.rtCriticsMin) return false;
-      if (filters.rtAudienceMin > 0 && (m.RT_Audience ?? -1) < filters.rtAudienceMin) return false;
+      if (imdbActive) {
+        const v = m.IMDb;
+        if (v == null || v < filters.imdbMin || v > filters.imdbMax) return false;
+      }
+      if (rtCriticsActive) {
+        const v = m.RT_Critics;
+        if (v == null || v < filters.rtCriticsMin || v > filters.rtCriticsMax) return false;
+      }
+      if (rtAudienceActive) {
+        const v = m.RT_Audience;
+        if (v == null || v < filters.rtAudienceMin || v > filters.rtAudienceMax) return false;
+      }
       if (q) {
-        const hay = `${m.Title ?? ""} ${m.Cast ?? ""}`.toLowerCase();
+        const hay = `${m.Title ?? ""} ${m.Cast ?? ""} ${synopsisOf(m) ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -95,12 +128,12 @@ export function Gallery({
       const av = sortVal(a, filters.sortField);
       const bv = sortVal(b, filters.sortField);
       if (av == null && bv == null) return 0;
-      if (av == null) return 1; // missing values always sort last
+      if (av == null) return 1;
       if (bv == null) return -1;
       return dir * (av - bv);
     });
     return result;
-  }, [movies, filters]);
+  }, [movies, filters, imdbActive, rtCriticsActive, rtAudienceActive]);
 
   const shown = filtered.slice(0, visible);
 
@@ -110,20 +143,30 @@ export function Gallery({
   }
 
   const activeCount = [
-    filters.search.trim() !== "",
     filters.type !== "",
     filters.genres.length > 0,
     filters.yearMin != null,
     filters.yearMax != null,
-    filters.imdbMin > 0,
-    filters.rtCriticsMin > 0,
-    filters.rtAudienceMin > 0,
+    imdbActive,
+    rtCriticsActive,
+    rtAudienceActive,
     filters.subtitledOnly,
     !filters.availableOnly
   ].filter(Boolean).length;
 
   return (
     <div>
+      {/* Prominent search (title / cast / synopsis) */}
+      <div className="mb-4">
+        <input
+          type="search"
+          value={filters.search}
+          onChange={(e) => update({ search: e.target.value })}
+          placeholder="Search by title, actor or synopsis…"
+          className="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-950 placeholder:text-emerald-700/60 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-50 dark:placeholder:text-emerald-300/50"
+        />
+      </div>
+
       {/* Controls */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-neutral-500">
         <div className="flex items-center gap-3">
@@ -141,51 +184,53 @@ export function Gallery({
           <span>{filtered.length.toLocaleString()} result(s)</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* View toggle */}
+        <div className="flex items-center gap-2">
+          {/* View toggle (icons) */}
           <div className="flex overflow-hidden rounded-md border border-neutral-300 dark:border-neutral-700">
             <button
               onClick={() => setView("list")}
               aria-pressed={view === "list"}
-              className={`px-2.5 py-1 text-xs ${
+              aria-label="List view"
+              title="List view"
+              className={`px-2 py-1.5 ${
                 view === "list" ? "bg-brand text-white" : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
-              List
+              <IconList />
             </button>
             <button
               onClick={() => setView("cards")}
               aria-pressed={view === "cards"}
-              className={`px-2.5 py-1 text-xs ${
+              aria-label="Card view"
+              title="Card view"
+              className={`px-2 py-1.5 ${
                 view === "cards" ? "bg-brand text-white" : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
-              Cards
+              <IconCards />
             </button>
           </div>
 
           {/* Sort field + direction */}
-          <label className="flex items-center gap-2">
-            Sort
-            <select
-              value={filters.sortField}
-              onChange={(e) => update({ sortField: e.target.value as SortField })}
-              className="rounded-md border border-neutral-300 bg-transparent px-2 py-1 dark:border-neutral-700"
-            >
-              {(Object.keys(SORT_LABELS) as SortField[]).map((f) => (
-                <option key={f} value={f}>
-                  {SORT_LABELS[f]}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            value={filters.sortField}
+            onChange={(e) => update({ sortField: e.target.value as SortField })}
+            aria-label="Sort by"
+            className="rounded-md border border-neutral-300 bg-transparent px-2 py-1.5 dark:border-neutral-700"
+          >
+            {(Object.keys(SORT_LABELS) as SortField[]).map((f) => (
+              <option key={f} value={f}>
+                {SORT_LABELS[f]}
+              </option>
+            ))}
+          </select>
           <button
             onClick={() => update({ sortDir: filters.sortDir === "asc" ? "desc" : "asc" })}
             title={filters.sortDir === "asc" ? "Ascending" : "Descending"}
             aria-label={`Sort ${filters.sortDir === "asc" ? "ascending" : "descending"}`}
-            className="rounded-md border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+            className="rounded-md border border-neutral-300 px-2 py-1.5 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
           >
-            {filters.sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+            <IconArrow up={filters.sortDir === "asc"} />
           </button>
         </div>
       </div>
@@ -198,14 +243,14 @@ export function Gallery({
       ) : view === "cards" ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {shown.map((m) => (
-            <MovieCard key={m.ID} movie={m} isNew={newIdSet.has(m.ID)} />
+            <MovieCard key={m.ID} movie={m} />
           ))}
         </div>
       ) : (
         <div className="rounded-lg border border-neutral-200 dark:border-neutral-800">
           <div className="divide-y divide-neutral-200 px-4 dark:divide-neutral-800">
             {shown.map((m) => (
-              <MovieListItem key={m.ID} movie={m} isNew={newIdSet.has(m.ID)} />
+              <MovieListItem key={m.ID} movie={m} />
             ))}
           </div>
         </div>

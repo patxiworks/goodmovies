@@ -1,17 +1,9 @@
-import { getMovies, computeFacets, isConfigured, NEW_COUNT } from "@/lib/movies";
+import { getMovies, computeFacets, isConfigured } from "@/lib/movies";
 import { Gallery } from "@/components/Gallery";
 
 export default async function HomePage() {
   const movies = await getMovies();
   const facets = computeFacets(movies);
-
-  // IDs that earn a "New" badge: the newest NEW_COUNT by ID.
-  const newIds = new Set(
-    movies
-      .map((m) => m.ID)
-      .sort((a, b) => b - a)
-      .slice(0, NEW_COUNT)
-  );
 
   if (!isConfigured()) {
     return (
@@ -34,7 +26,7 @@ export default async function HomePage() {
           {movies.length.toLocaleString()} titles · newest first
         </p>
       </div>
-      <Gallery movies={movies} facets={facets} newIds={Array.from(newIds)} />
+      <Gallery movies={movies} facets={facets} />
     </div>
   );
 }

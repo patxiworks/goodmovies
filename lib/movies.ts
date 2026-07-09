@@ -32,9 +32,6 @@ export function isConfigured(): boolean {
   return Boolean(MOVIES_JSON_URL);
 }
 
-/** How many of the newest IDs get the "New" badge. */
-export const NEW_COUNT = 12;
-
 /** Derive filter facets from the dataset. */
 export function computeFacets(movies: Movie[]): Facets {
   const types = new Set<string>();

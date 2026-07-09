@@ -2,7 +2,7 @@ import Link from "next/link";
 import { type Movie, synopsisOf } from "@/lib/types";
 
 /** Compact text row used by the default list view. */
-export function MovieListItem({ movie, isNew }: { movie: Movie; isNew?: boolean }) {
+export function MovieListItem({ movie }: { movie: Movie }) {
   const synopsis = synopsisOf(movie);
   const meta = [movie.Year, movie.Type !== "Movie" ? movie.Type : null, movie.Runtime]
     .filter(Boolean)
@@ -11,12 +11,7 @@ export function MovieListItem({ movie, isNew }: { movie: Movie; isNew?: boolean 
   return (
     <Link
       href={`/movie/${movie.ID}`}
-      title={isNew ? "Recently added" : undefined}
-      className={`-mx-4 flex items-start justify-between gap-4 px-4 py-3 transition ${
-        isNew
-          ? "bg-emerald-50 hover:bg-emerald-100/70 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50"
-          : "hover:bg-neutral-100/60 dark:hover:bg-neutral-900/60"
-      }`}
+      className="-mx-4 flex items-start justify-between gap-4 px-4 py-3 transition hover:bg-neutral-100/60 dark:hover:bg-neutral-900/60"
     >
       <div className="min-w-0">
         <h3 className="font-semibold leading-snug hover:text-brand">{movie.Title}</h3>
