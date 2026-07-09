@@ -131,6 +131,7 @@ export interface Proposal {
   title: string;
   imdb_url: string;
   status: string;
+  proposer_name: string | null;
   created_at: string;
 }
 
@@ -140,5 +141,6 @@ export interface Report {
   movie_title: string | null;
   reason: string;
   status: string;
+  reporter_name: string | null;
   created_at: string;
 }

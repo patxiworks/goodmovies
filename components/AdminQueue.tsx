@@ -62,6 +62,10 @@ export function AdminQueue() {
                     >
                       {p.imdb_url}
                     </a>
+                    <p className="mt-0.5 text-xs text-neutral-400">
+                      by {p.proposer_name ?? "unknown"} ·{" "}
+                      {new Date(p.created_at).toLocaleDateString()}
+                    </p>
                   </div>
                   <StatusBadge status={p.status} />
                 </div>
@@ -110,6 +114,10 @@ export function AdminQueue() {
                       {r.movie_title ?? `Movie #${r.movie_id}`}
                     </Link>
                     <p className="mt-0.5 text-neutral-600 dark:text-neutral-400">{r.reason}</p>
+                    <p className="mt-0.5 text-xs text-neutral-400">
+                      by {r.reporter_name ?? "unknown"} ·{" "}
+                      {new Date(r.created_at).toLocaleDateString()}
+                    </p>
                   </div>
                   <StatusBadge status={r.status} />
                 </div>

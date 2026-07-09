@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { displayName } from "@/lib/user";
 
 export function ReportForm({ movieId, title }: { movieId: number | null; title: string }) {
   const [reason, setReason] = useState("");
@@ -37,6 +38,7 @@ export function ReportForm({ movieId, title }: { movieId: number | null; title: 
 
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
+      reporter_name: displayName(user),
       movie_id: movieId,
       movie_title: title,
       reason: reason.trim()

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { displayName } from "@/lib/user";
 
 const IMDB_RE = /^https?:\/\/(www\.)?imdb\.com\/title\/tt\d+\/?/i;
 
@@ -29,9 +30,12 @@ export function ProposeForm() {
       return setError("Your session expired — please sign in again.");
     }
 
-    const { error } = await supabase
-      .from("proposals")
-      .insert({ proposer_id: user.id, title: title.trim(), imdb_url: url.trim() });
+    const { error } = await supabase.from("proposals").insert({
+      proposer_id: user.id,
+      proposer_name: displayName(user),
+      title: title.trim(),
+      imdb_url: url.trim()
+    });
 
     if (error) {
       setState("idle");
