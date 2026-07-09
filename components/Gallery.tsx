@@ -190,7 +190,7 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
           value={filters.search}
           onChange={(e) => update({ search: e.target.value })}
           placeholder="Search by title, actor or synopsis…"
-          className="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-950 placeholder:text-emerald-700/60 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-50 dark:placeholder:text-emerald-300/50"
+          className="w-full rounded-lg border border-emerald-400 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-950 ring-2 ring-emerald-200 placeholder:text-emerald-700/60 focus:bg-white focus:outline-none dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-50 dark:ring-emerald-900 dark:placeholder:text-emerald-300/50 dark:focus:bg-emerald-950/25"
         />
       </div>
 
