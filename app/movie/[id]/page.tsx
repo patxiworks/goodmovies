@@ -92,7 +92,10 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
         const synopsis = synopsisOf(movie);
         return synopsis ? (
           <section className="mt-5">
-            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+            <h2
+              aria-hidden
+              className="mb-1 text-sm font-semibold uppercase tracking-wide text-neutral-500 opacity-0"
+            >
               Synopsis
             </h2>
             <p className="leading-relaxed text-neutral-700 dark:text-neutral-300">{synopsis}</p>

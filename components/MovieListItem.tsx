@@ -11,7 +11,7 @@ export function MovieListItem({ movie }: { movie: Movie }) {
   return (
     <Link
       href={`/movie/${movie.ID}`}
-      className="-mx-4 flex items-start justify-between gap-4 px-4 py-3 transition odd:bg-emerald-50/60 hover:bg-neutral-100/60 dark:odd:bg-emerald-950/20 dark:hover:bg-neutral-900/60 sm:odd:bg-transparent sm:dark:odd:bg-transparent"
+      className="-mx-4 flex items-start justify-between gap-4 px-4 py-3 transition odd:bg-neutral-100/60 hover:bg-neutral-100/60 dark:odd:bg-neutral-900/60 dark:hover:bg-neutral-900/60 sm:odd:bg-transparent sm:dark:odd:bg-transparent"
     >
       <div className="min-w-0">
         <h3 className="font-semibold leading-snug hover:text-brand">{movie.Title}</h3>
