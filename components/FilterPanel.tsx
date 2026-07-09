@@ -32,7 +32,7 @@ export function FilterPanel({
   }
 
   return (
-    <aside className="space-y-5 rounded-lg border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <aside className="space-y-5 text-sm">
       <div>
         <label className="mb-1 block font-medium">Search</label>
         <input

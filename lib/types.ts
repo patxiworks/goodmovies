@@ -55,10 +55,20 @@ export interface Filters {
   rtAudienceMin: number;
   availableOnly: boolean;
   subtitledOnly: boolean;
-  sort: SortKey;
+  sortField: SortField;
+  sortDir: SortDir;
 }
 
-export type SortKey = "newest" | "imdb" | "year" | "title";
+export type SortField = "added" | "title" | "year" | "imdb" | "duration";
+export type SortDir = "asc" | "desc";
+
+export const SORT_LABELS: Record<SortField, string> = {
+  added: "Date added",
+  title: "Title",
+  year: "Year",
+  imdb: "IMDb",
+  duration: "Duration"
+};
 
 /* ---- Members' data (Supabase) ---- */
 
