@@ -29,7 +29,8 @@ export function Gallery({
     yearMin: null,
     yearMax: null,
     imdbMin: 0,
-    rtMin: 0,
+    rtCriticsMin: 0,
+    rtAudienceMin: 0,
     availableOnly: true,
     subtitledOnly: false,
     sort: "newest"
@@ -47,11 +48,8 @@ export function Gallery({
       if (filters.yearMin != null && (m.Year ?? -Infinity) < filters.yearMin) return false;
       if (filters.yearMax != null && (m.Year ?? Infinity) > filters.yearMax) return false;
       if (filters.imdbMin > 0 && (m.IMDb ?? -1) < filters.imdbMin) return false;
-      if (
-        filters.rtMin > 0 &&
-        Math.max(m.RT_Critics ?? -1, m.RT_Audience ?? -1) < filters.rtMin
-      )
-        return false;
+      if (filters.rtCriticsMin > 0 && (m.RT_Critics ?? -1) < filters.rtCriticsMin) return false;
+      if (filters.rtAudienceMin > 0 && (m.RT_Audience ?? -1) < filters.rtAudienceMin) return false;
       if (q) {
         const hay = `${m.Title ?? ""} ${m.Cast ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;

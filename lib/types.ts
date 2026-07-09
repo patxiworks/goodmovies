@@ -51,7 +51,8 @@ export interface Filters {
   yearMin: number | null;
   yearMax: number | null;
   imdbMin: number;
-  rtMin: number;
+  rtCriticsMin: number;
+  rtAudienceMin: number;
   availableOnly: boolean;
   subtitledOnly: boolean;
   sort: SortKey;

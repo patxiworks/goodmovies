@@ -24,7 +24,8 @@ export function FilterPanel({
       yearMin: null,
       yearMax: null,
       imdbMin: 0,
-      rtMin: 0,
+      rtCriticsMin: 0,
+      rtAudienceMin: 0,
       availableOnly: true,
       subtitledOnly: false
     });
@@ -101,19 +102,39 @@ export function FilterPanel({
       </div>
 
       <div>
-        <label className="mb-1 flex justify-between font-medium">
-          <span>Rotten Tomatoes ≥</span>
-          <span className="text-brand">{filters.rtMin}%</span>
-        </label>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={filters.rtMin}
-          onChange={(e) => onChange({ rtMin: Number(e.target.value) })}
-          className="w-full"
-        />
+        <span className="mb-1 block font-medium">Rotten Tomatoes</span>
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1 flex justify-between text-xs text-neutral-500">
+              <span>Critics ≥</span>
+              <span className="text-brand">{filters.rtCriticsMin}%</span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={filters.rtCriticsMin}
+              onChange={(e) => onChange({ rtCriticsMin: Number(e.target.value) })}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="mb-1 flex justify-between text-xs text-neutral-500">
+              <span>Audience ≥</span>
+              <span className="text-brand">{filters.rtAudienceMin}%</span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={filters.rtAudienceMin}
+              onChange={(e) => onChange({ rtAudienceMin: Number(e.target.value) })}
+              className="w-full"
+            />
+          </div>
+        </div>
       </div>
 
       <div>
