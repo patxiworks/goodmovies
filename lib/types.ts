@@ -18,6 +18,13 @@ export interface Movie {
   Primary_Genre?: string;
   Edited?: boolean;
   Synopsis?: string;
+  /** Fallback if the sheet still uses the original "COMMENTS" header. */
+  COMMENTS?: string;
+}
+
+/** The movie description, tolerant of either header name. */
+export function synopsisOf(m: Movie): string | undefined {
+  return m.Synopsis ?? m.COMMENTS;
 }
 
 export interface MoviesResponse {

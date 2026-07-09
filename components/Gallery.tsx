@@ -3,9 +3,11 @@
 import { useMemo, useState } from "react";
 import type { Movie, Facets, Filters } from "@/lib/types";
 import { MovieCard } from "./MovieCard";
+import { MovieListItem } from "./MovieListItem";
 import { FilterPanel } from "./FilterPanel";
 
 const PAGE = 60;
+type View = "list" | "cards";
 
 export function Gallery({
   movies,
@@ -18,6 +20,7 @@ export function Gallery({
 }) {
   const newIdSet = useMemo(() => new Set(newIds), [newIds]);
   const [visible, setVisible] = useState(PAGE);
+  const [view, setView] = useState<View>("list");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
@@ -96,32 +99,67 @@ export function Gallery({
 
       {/* Results */}
       <div className="min-w-0 flex-1">
-        <div className="mb-3 flex items-center justify-between gap-2 text-sm text-neutral-500">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-neutral-500">
           <span>{filtered.length.toLocaleString()} result(s)</span>
-          <label className="flex items-center gap-2">
-            Sort
-            <select
-              value={filters.sort}
-              onChange={(e) => update({ sort: e.target.value as Filters["sort"] })}
-              className="rounded-md border border-neutral-300 bg-transparent px-2 py-1 dark:border-neutral-700"
-            >
-              <option value="newest">Newest</option>
-              <option value="imdb">IMDb rating</option>
-              <option value="year">Year</option>
-              <option value="title">Title A–Z</option>
-            </select>
-          </label>
+          <div className="flex items-center gap-3">
+            {/* View toggle */}
+            <div className="flex overflow-hidden rounded-md border border-neutral-300 dark:border-neutral-700">
+              <button
+                onClick={() => setView("list")}
+                aria-pressed={view === "list"}
+                className={`px-2.5 py-1 text-xs ${
+                  view === "list"
+                    ? "bg-brand text-white"
+                    : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                }`}
+              >
+                List
+              </button>
+              <button
+                onClick={() => setView("cards")}
+                aria-pressed={view === "cards"}
+                className={`px-2.5 py-1 text-xs ${
+                  view === "cards"
+                    ? "bg-brand text-white"
+                    : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                }`}
+              >
+                Cards
+              </button>
+            </div>
+            <label className="flex items-center gap-2">
+              Sort
+              <select
+                value={filters.sort}
+                onChange={(e) => update({ sort: e.target.value as Filters["sort"] })}
+                className="rounded-md border border-neutral-300 bg-transparent px-2 py-1 dark:border-neutral-700"
+              >
+                <option value="newest">Newest</option>
+                <option value="imdb">IMDb rating</option>
+                <option value="year">Year</option>
+                <option value="title">Title A–Z</option>
+              </select>
+            </label>
+          </div>
         </div>
 
         {shown.length === 0 ? (
           <p className="rounded-lg border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-500 dark:border-neutral-700">
             No movies match your filters.
           </p>
-        ) : (
+        ) : view === "cards" ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
             {shown.map((m) => (
               <MovieCard key={m.ID} movie={m} isNew={newIdSet.has(m.ID)} />
             ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-neutral-200 dark:border-neutral-800">
+            <div className="divide-y divide-neutral-200 px-4 dark:divide-neutral-800">
+              {shown.map((m) => (
+                <MovieListItem key={m.ID} movie={m} isNew={newIdSet.has(m.ID)} />
+              ))}
+            </div>
           </div>
         )}
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMovies } from "@/lib/movies";
+import { synopsisOf } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
 import { MovieActions } from "@/components/MovieActions";
 
@@ -87,11 +88,17 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
         </p>
       )}
 
-      {movie.Synopsis && (
-        <p className="mt-4 leading-relaxed text-neutral-700 dark:text-neutral-300">
-          {movie.Synopsis}
-        </p>
-      )}
+      {(() => {
+        const synopsis = synopsisOf(movie);
+        return synopsis ? (
+          <section className="mt-5">
+            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+              Synopsis
+            </h2>
+            <p className="leading-relaxed text-neutral-700 dark:text-neutral-300">{synopsis}</p>
+          </section>
+        ) : null;
+      })()}
 
       <MovieActions movieId={movie.ID} title={movie.Title} isAuthed={isAuthed} />
     </article>
