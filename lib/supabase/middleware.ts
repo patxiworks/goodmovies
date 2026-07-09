@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config";
 
 const PROTECTED = ["/dashboard", "/groups"];
 
@@ -10,12 +11,10 @@ const PROTECTED = ["/dashboard", "/groups"];
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   // If Supabase isn't configured yet, don't block anything.
-  if (!url || !key) return response;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return response;
 
-  const supabase = createServerClient(url, key, {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
