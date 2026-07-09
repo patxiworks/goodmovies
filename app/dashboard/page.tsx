@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { RecommendationsFeed } from "@/components/RecommendationsFeed";
+
+// Per-user page — never statically prerendered.
+export const dynamic = "force-dynamic";
 
 const CARDS = [
   {
@@ -18,13 +22,13 @@ const CARDS = [
     href: "/dashboard/recommend",
     title: "Recommend to a group",
     body: "Rate a movie 1–10 and tell one of your groups why to watch it.",
-    ready: false
+    ready: true
   },
   {
     href: "/groups",
     title: "Your groups",
     body: "Create up to 5 groups and invite people to share recommendations.",
-    ready: false
+    ready: true
   }
 ];
 
@@ -62,6 +66,11 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      <section className="mt-10">
+        <h2 className="mb-3 text-lg font-bold tracking-tight">Shared with you</h2>
+        <RecommendationsFeed />
+      </section>
     </div>
   );
 }

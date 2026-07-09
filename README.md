@@ -43,7 +43,8 @@ copy its `…/exec` URL.
 
 ### 2. Supabase
 1. Create a free project at [supabase.com](https://supabase.com).
-2. **SQL Editor** → paste and run `supabase/migrations/0001_init.sql`.
+2. **SQL Editor** → run each file in `supabase/migrations/` in order
+   (`0001_init.sql`, then `0002_recommendation_author.sql`).
 3. **Authentication → Providers**: enable **Email** (magic link). Optionally
    enable **Google** and add your OAuth credentials.
 4. **Authentication → URL Configuration**: add your site URL and
@@ -94,7 +95,8 @@ supabase/migrations/       SQL schema + RLS policies
 - [x] Auth (magic link + Google), protected members routes
 - [x] Propose a film (working) · Report a movie (working)
 - [x] Full DB schema + RLS for groups & recommendations
-- [ ] Groups UI: create/invite/manage
-- [ ] Recommend flow wired to groups
-- [ ] Members' "shared with me" recommendations feed
+- [x] Groups UI: create (max 5) / invite by email / manage / delete
+- [x] Recommend flow wired to groups (rating 1–10 + reason)
+- [x] Members' "shared with me" recommendations feed
 - [ ] Curator/admin views for proposals & reports
+- [ ] Membership accept flow + email notifications

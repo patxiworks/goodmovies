@@ -29,3 +29,7 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# archives / tarballs
+*.tar.gz
+*.zip

@@ -51,3 +51,40 @@ export interface Filters {
 }
 
 export type SortKey = "newest" | "imdb" | "year" | "title";
+
+/* ---- Members' data (Supabase) ---- */
+
+export interface Group {
+  id: string;
+  owner_id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface GroupMember {
+  id: string;
+  group_id: string;
+  member_email: string;
+  status: string;
+  created_at: string;
+}
+
+/** A group joined via a membership row (owned by someone else). */
+export interface MembershipWithGroup extends GroupMember {
+  groups: Group | null;
+}
+
+export interface Recommendation {
+  id: string;
+  group_id: string;
+  recommender_id: string;
+  recommender_name: string | null;
+  movie_id: number;
+  movie_title: string | null;
+  rating: number;
+  reason: string | null;
+  created_at: string;
+  groups?: { name: string } | null;
+}
+
+export const MAX_GROUPS = 5;
