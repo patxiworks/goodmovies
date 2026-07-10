@@ -4,6 +4,7 @@ import { getMovies } from "@/lib/movies";
 import { synopsisOf } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
 import { MovieActions } from "@/components/MovieActions";
+import { PosterZoom } from "@/components/PosterZoom";
 
 export default async function MoviePage({ params }: { params: { id: string } }) {
   const movies = await getMovies();
@@ -33,12 +34,10 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
 
       <div className="mt-4 flex flex-col gap-6 sm:flex-row">
         {movie.Poster && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <PosterZoom
             src={movie.Poster}
             alt={`${movie.Title} poster`}
-            loading="lazy"
-            className="mx-auto w-44 shrink-0 self-start rounded-lg shadow sm:mx-0"
+            className="mx-auto w-52 shrink-0 self-start rounded-lg shadow sm:mx-0"
           />
         )}
         <div className="min-w-0 flex-1">
