@@ -6,7 +6,9 @@ import {
   type Facets,
   type Filters,
   type SortField,
+  type SearchScope,
   SORT_LABELS,
+  SEARCH_PLACEHOLDERS,
   BOUNDS,
   synopsisOf
 } from "@/lib/types";
@@ -62,6 +64,7 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
+    searchScope: "any",
     type: "",
     genres: [],
     yearMin: null,
@@ -141,8 +144,21 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
         if (v == null || v < filters.rtAudienceMin || v > filters.rtAudienceMax) return false;
       }
       if (q) {
-        const hay = `${m.Title ?? ""} ${m.Cast ?? ""} ${synopsisOf(m) ?? ""}`.toLowerCase();
-        if (!hay.includes(q)) return false;
+        let hay: string;
+        switch (filters.searchScope) {
+          case "title":
+            hay = m.Title ?? "";
+            break;
+          case "synopsis":
+            hay = synopsisOf(m) ?? "";
+            break;
+          case "actors":
+            hay = m.Cast ?? "";
+            break;
+          default:
+            hay = `${m.Title ?? ""} ${m.Cast ?? ""} ${synopsisOf(m) ?? ""}`;
+        }
+        if (!hay.toLowerCase().includes(q)) return false;
       }
       return true;
     });
@@ -183,14 +199,25 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
 
   return (
     <div>
-      {/* Prominent search (title / cast / synopsis) */}
-      <div className="mb-4">
+      {/* Prominent search with a scope selector */}
+      <div className="mb-4 flex gap-2">
+        <select
+          value={filters.searchScope}
+          onChange={(e) => update({ searchScope: e.target.value as SearchScope })}
+          aria-label="Search in"
+          className="shrink-0 rounded-lg border border-violet-400 bg-violet-50 px-2 text-sm text-violet-950 ring-2 ring-violet-200 focus:outline-none dark:border-violet-700 dark:bg-violet-950/40 dark:text-violet-50 dark:ring-violet-900"
+        >
+          <option value="any">All</option>
+          <option value="title">Titles</option>
+          <option value="synopsis">Synopsis</option>
+          <option value="actors">Actors</option>
+        </select>
         <input
           type="search"
           value={filters.search}
           onChange={(e) => update({ search: e.target.value })}
-          placeholder="Search by title, actor or synopsis…"
-          className="w-full rounded-lg border border-violet-400 bg-violet-50 px-4 py-2.5 text-sm text-violet-950 ring-2 ring-violet-200 placeholder:text-violet-700/60 focus:bg-white focus:outline-none dark:border-violet-700 dark:bg-violet-950/40 dark:text-violet-50 dark:ring-violet-900 dark:placeholder:text-violet-300/50 dark:focus:bg-violet-950/25"
+          placeholder={SEARCH_PLACEHOLDERS[filters.searchScope]}
+          className="flex-1 rounded-lg border border-violet-400 bg-violet-50 px-4 py-2.5 text-sm text-violet-950 ring-2 ring-violet-200 placeholder:text-violet-700/60 focus:bg-white focus:outline-none dark:border-violet-700 dark:bg-violet-950/40 dark:text-violet-50 dark:ring-violet-900 dark:placeholder:text-violet-300/50 dark:focus:bg-violet-950/25"
         />
       </div>
 

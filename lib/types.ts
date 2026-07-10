@@ -44,8 +44,18 @@ export interface Facets {
   maxId: number;
 }
 
+export type SearchScope = "any" | "title" | "synopsis" | "actors";
+
+export const SEARCH_PLACEHOLDERS: Record<SearchScope, string> = {
+  any: "Search title, actor or synopsis…",
+  title: "Search titles…",
+  synopsis: "Search synopsis…",
+  actors: "Search actors…"
+};
+
 export interface Filters {
   search: string;
+  searchScope: SearchScope;
   type: string;
   genres: string[];
   yearMin: number | null;
