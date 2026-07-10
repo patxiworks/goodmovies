@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AdminQueue } from "@/components/AdminQueue";
 
@@ -24,9 +23,6 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-brand">
-        ← Members area
-      </Link>
       <h1 className="mt-3 text-2xl font-bold tracking-tight">Admin · review queue</h1>
 
       {isAdmin ? (

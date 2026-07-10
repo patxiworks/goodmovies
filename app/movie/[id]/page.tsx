@@ -28,7 +28,7 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
   return (
     <article className="mx-auto max-w-3xl">
       <Link href="/" className="text-sm text-neutral-500 hover:text-brand">
-        ← Back to browse
+        ← Back to all movies
       </Link>
 
       <header className="mt-4 flex flex-wrap items-start justify-between gap-3">
@@ -91,7 +91,7 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
       {(() => {
         const synopsis = synopsisOf(movie);
         return synopsis ? (
-          <section className="mt-5">
+          <section className="mt-5 mb-6">
             <h2
               aria-hidden
               className="mb-1 text-sm font-semibold uppercase tracking-wide text-neutral-500 opacity-0"

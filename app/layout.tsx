@@ -64,7 +64,7 @@ export default async function RootLayout({
         </header>
         <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
         <footer className="mx-auto max-w-7xl px-4 py-10 text-center text-xs text-neutral-500">
-          GoodMovies · data from the Movie Data sheet
+          GoodMovies · A movie list you can rely on in {new Date().getFullYear()}
         </footer>
       </body>
     </html>

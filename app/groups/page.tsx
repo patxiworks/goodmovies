@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { GroupsManager } from "@/components/GroupsManager";
 
 // Per-user page — never statically prerendered.
@@ -7,9 +6,6 @@ export const dynamic = "force-dynamic";
 export default function GroupsPage() {
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-brand">
-        ← Members area
-      </Link>
       <h1 className="mt-3 text-2xl font-bold tracking-tight">Your groups</h1>
       <p className="text-sm text-neutral-500">
         Create up to 5 groups of people you want to share movie recommendations with. Invite
