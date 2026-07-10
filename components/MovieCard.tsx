@@ -22,10 +22,20 @@ export function MovieCard({ movie }: { movie: Movie }) {
       className="group flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
     >
       <div
-        className="relative flex aspect-[3/4] items-center justify-center"
+        className="relative flex aspect-[3/4] items-center justify-center overflow-hidden"
         style={{ background: gradient(movie.Title ?? "") }}
       >
-        <span className="select-none text-4xl font-black text-white/85">{initials}</span>
+        {movie.Poster ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={movie.Poster}
+            alt={`${movie.Title} poster`}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <span className="select-none text-4xl font-black text-white/85">{initials}</span>
+        )}
         {movie.Type && movie.Type !== "Movie" && (
           <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white">
             {movie.Type}

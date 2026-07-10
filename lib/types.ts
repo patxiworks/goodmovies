@@ -18,6 +18,8 @@ export interface Movie {
   Primary_Genre?: string;
   Edited?: boolean;
   Synopsis?: string;
+  /** Full poster image URL (from the sheet's Poster column, populated via TMDb). */
+  Poster?: string;
   /** Fallback if the sheet still uses the original "COMMENTS" header. */
   COMMENTS?: string;
 }
