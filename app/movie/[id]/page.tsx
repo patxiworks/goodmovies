@@ -104,7 +104,7 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
           <section className="mt-5 mb-6">
             <h2
               aria-hidden
-              className="mb-1 text-sm font-semibold uppercase tracking-wide text-neutral-500 opacity-0"
+              className="mb-1 hidden text-sm font-semibold uppercase tracking-wide text-neutral-500"
             >
               Synopsis
             </h2>
