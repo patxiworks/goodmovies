@@ -70,9 +70,18 @@ export interface Filters {
   rtAudienceMax: number;
   availableOnly: boolean;
   subtitledOnly: boolean;
+  watchedFilter: WatchedFilter;
   sortField: SortField;
   sortDir: SortDir;
 }
+
+export type WatchedFilter = "all" | "watched" | "unwatched";
+
+export const WATCHED_LABELS: Record<WatchedFilter, string> = {
+  all: "Show all movies",
+  watched: "Show only movies watched",
+  unwatched: "Show only movies not watched"
+};
 
 export type SortField =
   | "added"

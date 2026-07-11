@@ -7,11 +7,14 @@ import {
   type Filters,
   type SortField,
   type SearchScope,
+  type WatchedFilter,
   SORT_LABELS,
   SEARCH_PLACEHOLDERS,
+  WATCHED_LABELS,
   BOUNDS,
   synopsisOf
 } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
 import { MovieCard } from "./MovieCard";
 import { MovieListItem } from "./MovieListItem";
 import { FilterPanel } from "./FilterPanel";
@@ -62,6 +65,8 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
   const [visible, setVisible] = useState(PAGE);
   const [view, setView] = useState<View>("list");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [watchedSet, setWatchedSet] = useState<Set<number>>(new Set());
+  const [signedIn, setSignedIn] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
     searchScope: "any",
@@ -77,9 +82,33 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
     rtAudienceMax: BOUNDS.rt.max,
     availableOnly: true,
     subtitledOnly: false,
+    watchedFilter: "all",
     sortField: "added",
     sortDir: "desc"
   });
+
+  // Load which movies the signed-in user has marked watched.
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+    let active = true;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user }
+        } = await supabase.auth.getUser();
+        if (!user || !active) return;
+        setSignedIn(true);
+        const { data } = await supabase.from("watched").select("movie_id");
+        if (active && data) setWatchedSet(new Set(data.map((r) => Number(r.movie_id))));
+      } catch {
+        /* not configured / offline */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = filtersOpen ? "hidden" : "";
@@ -126,6 +155,8 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
       if (filters.availableOnly && m.Status && m.Status.toLowerCase() !== "available")
         return false;
       if (filters.subtitledOnly && !m.Subtitled) return false;
+      if (filters.watchedFilter === "watched" && !watchedSet.has(m.ID)) return false;
+      if (filters.watchedFilter === "unwatched" && watchedSet.has(m.ID)) return false;
       if (filters.type && m.Type !== filters.type) return false;
       if (filters.genres.length && !filters.genres.every((g) => (m.Genres ?? []).includes(g)))
         return false;
@@ -176,7 +207,7 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
       return dir * (av - bv);
     });
     return result;
-  }, [movies, filters, imdbActive, rtCriticsActive, rtAudienceActive]);
+  }, [movies, filters, imdbActive, rtCriticsActive, rtAudienceActive, watchedSet]);
 
   const shown = filtered.slice(0, visible);
 
@@ -197,8 +228,25 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
     !filters.availableOnly
   ].filter(Boolean).length;
 
+  function cycleWatched() {
+    const order: WatchedFilter[] = ["all", "watched", "unwatched"];
+    const next = order[(order.indexOf(filters.watchedFilter) + 1) % order.length];
+    update({ watchedFilter: next });
+  }
+
   return (
     <div>
+      {/* Watched filter toggle (or a hint when signed out) */}
+      <div className="mb-4 text-sm text-neutral-500">
+        {signedIn ? (
+          <button onClick={cycleWatched} className="font-medium text-brand hover:underline">
+            {WATCHED_LABELS[filters.watchedFilter]}
+          </button>
+        ) : (
+          <span>Sign in to track the movies you&apos;ve watched</span>
+        )}
+      </div>
+
       {/* Prominent search with a scope selector */}
       <div className="mb-4 flex gap-2">
         <select
@@ -301,14 +349,14 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
       ) : view === "cards" ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {shown.map((m) => (
-            <MovieCard key={m.ID} movie={m} />
+            <MovieCard key={m.ID} movie={m} watched={watchedSet.has(m.ID)} />
           ))}
         </div>
       ) : (
         <div className="rounded-lg border border-neutral-200 dark:border-neutral-800">
           <div className="divide-y divide-neutral-200 px-4 dark:divide-neutral-800">
             {shown.map((m) => (
-              <MovieListItem key={m.ID} movie={m} />
+              <MovieListItem key={m.ID} movie={m} watched={watchedSet.has(m.ID)} />
             ))}
           </div>
         </div>

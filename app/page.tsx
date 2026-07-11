@@ -20,11 +20,8 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="mb-5">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold tracking-tight">Browse all movies</h1>
-        <p className="text-sm text-neutral-500">
-          {movies.length.toLocaleString()} titles · newest first
-        </p>
       </div>
       <Gallery movies={movies} facets={facets} />
     </div>

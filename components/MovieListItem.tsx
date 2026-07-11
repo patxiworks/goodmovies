@@ -2,7 +2,7 @@ import Link from "next/link";
 import { type Movie, synopsisOf } from "@/lib/types";
 
 /** Compact text row used by the default list view. */
-export function MovieListItem({ movie }: { movie: Movie }) {
+export function MovieListItem({ movie, watched }: { movie: Movie; watched?: boolean }) {
   const synopsis = synopsisOf(movie);
   const meta = [movie.Year, movie.Type !== "Movie" ? movie.Type : null, movie.Runtime]
     .filter(Boolean)
@@ -22,9 +22,18 @@ export function MovieListItem({ movie }: { movie: Movie }) {
           </p>
         )}
       </div>
-      {movie.IMDb != null && (
-        <span className="shrink-0 pt-0.5 text-xs text-neutral-500">★ {movie.IMDb.toFixed(1)}</span>
-      )}
+      <span className="flex shrink-0 items-center gap-1.5 pt-0.5 text-xs text-neutral-500">
+        {movie.IMDb != null && <span>★ {movie.IMDb.toFixed(1)}</span>}
+        {watched && (
+          <span
+            title="Watched"
+            aria-label="Watched"
+            className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[11px] font-bold text-white"
+          >
+            ✓
+          </span>
+        )}
+      </span>
     </Link>
   );
 }

@@ -8,7 +8,7 @@ function gradient(seed: string) {
   return `linear-gradient(135deg, hsl(${h} 55% 45%), hsl(${(h + 40) % 360} 55% 30%))`;
 }
 
-export function MovieCard({ movie }: { movie: Movie }) {
+export function MovieCard({ movie, watched }: { movie: Movie; watched?: boolean }) {
   const initials = (movie.Title ?? "?")
     .split(/\s+/)
     .slice(0, 2)
@@ -42,8 +42,17 @@ export function MovieCard({ movie }: { movie: Movie }) {
           </span>
         )}
         {movie.IMDb != null && (
-          <span className="absolute bottom-2 right-2 rounded-md bg-yellow-400 px-1.5 py-0.5 text-[11px] font-bold text-black">
+          <span className="absolute bottom-2 left-2 rounded-md bg-yellow-400 px-1.5 py-0.5 text-[11px] font-bold text-black">
             ★ {movie.IMDb.toFixed(1)}
+          </span>
+        )}
+        {watched && (
+          <span
+            title="Watched"
+            aria-label="Watched"
+            className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white shadow"
+          >
+            ✓
           </span>
         )}
       </div>
