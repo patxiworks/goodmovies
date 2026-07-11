@@ -147,6 +147,15 @@ export interface Recommendation {
 
 export const MAX_GROUPS = 5;
 
+export interface Profile {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  approved: boolean;
+  is_admin: boolean;
+  created_at: string;
+}
+
 export interface Proposal {
   id: string;
   title: string;

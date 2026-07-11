@@ -3,22 +3,30 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import type { Proposal, Report } from "@/lib/types";
+import type { Profile, Proposal, Report } from "@/lib/types";
 
 export function AdminQueue() {
   const supabase = createClient();
+  const [members, setMembers] = useState<Profile[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function load() {
-    const [{ data: p }, { data: r }] = await Promise.all([
+    const [{ data: m }, { data: p }, { data: r }] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("proposals").select("*").order("created_at", { ascending: false }),
       supabase.from("reports").select("*").order("created_at", { ascending: false })
     ]);
+    setMembers((m ?? []) as Profile[]);
     setProposals((p ?? []) as Proposal[]);
     setReports((r ?? []) as Report[]);
     setLoading(false);
+  }
+
+  async function setApproved(id: string, approved: boolean) {
+    await supabase.from("profiles").update({ approved }).eq("id", id);
+    setMembers((ms) => ms.map((x) => (x.id === id ? { ...x, approved } : x)));
   }
 
   useEffect(() => {
@@ -36,8 +44,63 @@ export function AdminQueue() {
 
   if (loading) return <p className="mt-6 text-sm text-neutral-500">Loading queue…</p>;
 
+  const pending = members.filter((m) => !m.approved && !m.is_admin);
+  const approvedMembers = members.filter((m) => m.approved && !m.is_admin);
+
   return (
     <div className="mt-6 space-y-10">
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+          Pending sign-ups ({pending.length})
+        </h2>
+        {pending.length === 0 ? (
+          <p className="text-sm text-neutral-500">No one is waiting for approval.</p>
+        ) : (
+          <ul className="space-y-2">
+            {pending.map((m) => (
+              <li
+                key={m.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950/30"
+              >
+                <span>
+                  <span className="font-medium">{m.username || m.display_name || "New user"}</span>
+                  <span className="text-xs text-neutral-500">
+                    {" "}· joined {new Date(m.created_at).toLocaleDateString()}
+                  </span>
+                </span>
+                <button
+                  onClick={() => setApproved(m.id, true)}
+                  className="shrink-0 rounded border border-emerald-400 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950"
+                >
+                  Approve
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {approvedMembers.length > 0 && (
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer text-neutral-500">
+              Approved members ({approvedMembers.length})
+            </summary>
+            <ul className="mt-2 space-y-1">
+              {approvedMembers.map((m) => (
+                <li key={m.id} className="flex items-center justify-between gap-3 px-1">
+                  <span>{m.username || m.display_name || "Member"}</span>
+                  <button
+                    onClick={() => setApproved(m.id, false)}
+                    className="text-xs text-neutral-500 hover:text-red-600"
+                  >
+                    Revoke
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </section>
+
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
           Proposed films ({proposals.length})
