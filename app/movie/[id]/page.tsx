@@ -12,6 +12,7 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
   if (!movie) notFound();
 
   let isAuthed = false;
+  let isApproved = false;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     try {
       const supabase = createClient();
@@ -19,6 +20,14 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
         data: { user }
       } = await supabase.auth.getUser();
       isAuthed = Boolean(user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("approved, is_admin")
+          .eq("id", user.id)
+          .single();
+        isApproved = Boolean(profile?.approved || profile?.is_admin);
+      }
     } catch {
       isAuthed = false;
     }
@@ -113,7 +122,12 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
         ) : null;
       })()}
 
-          <MovieActions movieId={movie.ID} title={movie.Title} isAuthed={isAuthed} />
+          <MovieActions
+            movieId={movie.ID}
+            title={movie.Title}
+            isAuthed={isAuthed}
+            isApproved={isApproved}
+          />
         </div>
       </div>
     </article>

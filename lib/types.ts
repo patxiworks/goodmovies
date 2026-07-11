@@ -78,9 +78,9 @@ export interface Filters {
 export type WatchedFilter = "all" | "watched" | "unwatched";
 
 export const WATCHED_LABELS: Record<WatchedFilter, string> = {
-  all: "Show all movies",
-  watched: "Show only movies watched",
-  unwatched: "Show only movies not watched"
+  all: "Showing all movies",
+  watched: "Showing only movies watched",
+  unwatched: "Showing only movies not watched"
 };
 
 export type SortField =

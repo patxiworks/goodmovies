@@ -63,10 +63,10 @@ const IconArrow = ({ up }: { up: boolean }) => (
 
 export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets }) {
   const [visible, setVisible] = useState(PAGE);
-  const [view, setView] = useState<View>("list");
+  const [view, setView] = useState<View>("cards");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [watchedSet, setWatchedSet] = useState<Set<number>>(new Set());
-  const [signedIn, setSignedIn] = useState(false);
+  const [approved, setApproved] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
     searchScope: "any",
@@ -98,7 +98,15 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
           data: { user }
         } = await supabase.auth.getUser();
         if (!user || !active) return;
-        setSignedIn(true);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("approved, is_admin")
+          .eq("id", user.id)
+          .single();
+        const isApproved = Boolean(profile?.approved || profile?.is_admin);
+        if (!active) return;
+        setApproved(isApproved);
+        if (!isApproved) return; // unapproved users can't track watched
         const { data } = await supabase.from("watched").select("movie_id");
         if (active && data) setWatchedSet(new Set(data.map((r) => Number(r.movie_id))));
       } catch {
@@ -239,7 +247,7 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
       {/* Movie count + watched toggle (signed-in only) */}
       <div className="mb-4 flex flex-wrap items-center gap-x-2 text-sm text-neutral-500">
         <span>{movies.length.toLocaleString()} movies</span>
-        {signedIn && (
+        {approved && (
           <>
             <span aria-hidden>·</span>
             <button onClick={cycleWatched} className="text-neutral-500 hover:underline">

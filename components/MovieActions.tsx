@@ -3,35 +3,37 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { RecommendForm } from "./RecommendForm";
+import { ReportForm } from "./ReportForm";
 
 interface WatchedRow {
   watched_on: string | null;
   comments: string | null;
 }
 
-/**
- * Member actions on a movie: Recommend, Mark as watched, Report.
- * Anonymous users get a sign-in prompt instead.
- */
+type ModalKind = "watched" | "recommend" | "report" | null;
+
 export function MovieActions({
   movieId,
   title,
-  isAuthed
+  isAuthed,
+  isApproved
 }: {
   movieId: number;
   title: string;
   isAuthed: boolean;
+  isApproved: boolean;
 }) {
   const supabase = createClient();
   const [watched, setWatched] = useState<WatchedRow | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [modal, setModal] = useState<ModalKind>(null);
   const [date, setDate] = useState("");
   const [comments, setComments] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!isAuthed) return;
+    if (!isAuthed || !isApproved) return;
     (async () => {
       const { data } = await supabase
         .from("watched")
@@ -45,7 +47,15 @@ export function MovieActions({
       }
       setLoaded(true);
     })();
-  }, [isAuthed, movieId, supabase]);
+  }, [isAuthed, isApproved, movieId, supabase]);
+
+  // Lock background scroll while any modal is open.
+  useEffect(() => {
+    document.body.style.overflow = modal ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [modal]);
 
   if (!isAuthed) {
     return (
@@ -58,9 +68,16 @@ export function MovieActions({
     );
   }
 
-  const q = `?movie=${movieId}&title=${encodeURIComponent(title)}`;
+  if (!isApproved) {
+    return (
+      <div className="mt-8 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+        Your account is awaiting approval. Once an admin approves you, you can recommend,
+        mark movies watched and report problems.
+      </div>
+    );
+  }
 
-  async function save() {
+  async function saveWatched() {
     setBusy(true);
     const {
       data: { user }
@@ -81,11 +98,11 @@ export function MovieActions({
     setBusy(false);
     if (!error) {
       setWatched({ watched_on: date || null, comments: comments.trim() || null });
-      setOpen(false);
+      setModal(null);
     }
   }
 
-  async function unmark() {
+  async function unmarkWatched() {
     setBusy(true);
     const {
       data: { user }
@@ -99,20 +116,20 @@ export function MovieActions({
     setWatched(null);
     setDate("");
     setComments("");
-    setOpen(false);
+    setModal(null);
   }
 
   return (
     <>
       <div className="mt-8 flex flex-wrap gap-3">
-        <Link
-          href={`/dashboard/recommend${q}`}
+        <button
+          onClick={() => setModal("recommend")}
           className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
         >
           Recommend
-        </Link>
+        </button>
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => setModal("watched")}
           disabled={!loaded}
           className={`rounded-md px-4 py-2 text-sm font-medium disabled:opacity-60 ${
             watched
@@ -122,74 +139,113 @@ export function MovieActions({
         >
           {watched ? "✓ Watched" : "Mark as watched"}
         </button>
-        <Link
-          href={`/dashboard/report${q}`}
+        <button
+          onClick={() => setModal("report")}
           className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950"
         >
-          Report a problem
-        </Link>
+          <span className="sm:hidden">Report</span>
+          <span className="hidden sm:inline">Report a problem</span>
+        </button>
       </div>
 
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-5 shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
-          >
-            <h2 className="text-lg font-bold">Mark as watched</h2>
-            <p className="mt-0.5 truncate text-sm text-neutral-500">{title}</p>
+      {modal === "recommend" && (
+        <Modal title="Recommend to a group" onClose={() => setModal(null)}>
+          <RecommendForm movieId={movieId} title={title} />
+        </Modal>
+      )}
 
-            <label className="mt-4 block text-sm font-medium">Date watched <span className="text-neutral-400">(optional)</span></label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-            />
+      {modal === "report" && (
+        <Modal title="Report a movie" onClose={() => setModal(null)}>
+          <ReportForm movieId={movieId} title={title} />
+        </Modal>
+      )}
 
-            <label className="mt-3 block text-sm font-medium">Comments <span className="text-neutral-400">(optional)</span></label>
-            <textarea
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-              rows={3}
-              placeholder="What did you think?"
-              className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-            />
-
-            <div className="mt-5 flex items-center justify-between gap-2">
-              {watched ? (
-                <button
-                  onClick={unmark}
-                  disabled={busy}
-                  className="text-sm text-red-600 hover:underline disabled:opacity-60"
-                >
-                  Unmark
-                </button>
-              ) : (
-                <span />
-              )}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setOpen(false)}
-                  className="rounded-md border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={save}
-                  disabled={busy}
-                  className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
-                >
-                  {busy ? "Saving…" : "Save"}
-                </button>
-              </div>
+      {modal === "watched" && (
+        <Modal title="Mark as watched" onClose={() => setModal(null)}>
+          <p className="mt-0.5 truncate text-sm text-neutral-500">{title}</p>
+          <label className="mt-4 block text-sm font-medium">
+            Date watched <span className="text-neutral-400">(optional)</span>
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+          />
+          <label className="mt-3 block text-sm font-medium">
+            Comments <span className="text-neutral-400">(optional)</span>
+          </label>
+          <textarea
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            rows={3}
+            placeholder="What did you think?"
+            className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+          />
+          <div className="mt-5 flex items-center justify-between gap-2">
+            {watched ? (
+              <button
+                onClick={unmarkWatched}
+                disabled={busy}
+                className="text-sm text-red-600 hover:underline disabled:opacity-60"
+              >
+                Unmark
+              </button>
+            ) : (
+              <span />
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setModal(null)}
+                className="rounded-md border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveWatched}
+                disabled={busy}
+                className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+              >
+                {busy ? "Saving…" : "Save"}
+              </button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </>
+  );
+}
+
+function Modal({
+  title,
+  onClose,
+  children
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-xl border border-neutral-200 bg-white p-5 shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-lg font-bold">{title}</h2>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-md px-2 py-1 text-sm text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          >
+            ✕
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
   );
 }
