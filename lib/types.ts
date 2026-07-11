@@ -151,6 +151,7 @@ export interface Profile {
   id: string;
   username: string | null;
   display_name: string | null;
+  email: string | null;
   approved: boolean;
   is_admin: boolean;
   created_at: string;

@@ -62,10 +62,11 @@ export function AdminQueue() {
                 key={m.id}
                 className="flex items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950/30"
               >
-                <span>
+                <span className="min-w-0">
                   <span className="font-medium">{m.username || m.display_name || "New user"}</span>
-                  <span className="text-xs text-neutral-500">
-                    {" "}· joined {new Date(m.created_at).toLocaleDateString()}
+                  {m.email && <span className="block truncate text-xs text-neutral-500">{m.email}</span>}
+                  <span className="text-xs text-neutral-400">
+                    joined {new Date(m.created_at).toLocaleDateString()}
                   </span>
                 </span>
                 <button

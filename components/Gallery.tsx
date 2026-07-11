@@ -236,18 +236,16 @@ export function Gallery({ movies, facets }: { movies: Movie[]; facets: Facets })
 
   return (
     <div>
-      {/* Movie count + watched toggle (or a sign-in hint) */}
+      {/* Movie count + watched toggle (signed-in only) */}
       <div className="mb-4 flex flex-wrap items-center gap-x-2 text-sm text-neutral-500">
         <span>{movies.length.toLocaleString()} movies</span>
-        <span aria-hidden>·</span>
-        {signedIn ? (
-          <button onClick={cycleWatched} className="text-neutral-500 hover:underline">
-            {WATCHED_LABELS[filters.watchedFilter]}
-          </button>
-        ) : (
-          <span>
-            Sign in to recommend movies, propose new movies and track the movies you&apos;ve watched
-          </span>
+        {signedIn && (
+          <>
+            <span aria-hidden>·</span>
+            <button onClick={cycleWatched} className="text-neutral-500 hover:underline">
+              {WATCHED_LABELS[filters.watchedFilter]}
+            </button>
+          </>
         )}
       </div>
 
