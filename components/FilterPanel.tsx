@@ -12,6 +12,12 @@ export function FilterPanel({
   filters: Filters;
   onChange: (patch: Partial<Filters>) => void;
 }) {
+  // Year slider bounds: oldest year in the data → current year.
+  const yearMinBound = facets.yearMin;
+  const yearMaxBound = Math.max(facets.yearMax, new Date().getFullYear());
+  const yearLow = filters.yearMin ?? yearMinBound;
+  const yearHigh = filters.yearMax ?? yearMaxBound;
+
   function toggleGenre(g: string) {
     const has = filters.genres.includes(g);
     onChange({ genres: has ? filters.genres.filter((x) => x !== g) : [...filters.genres, g] });
@@ -53,28 +59,25 @@ export function FilterPanel({
       </div>
 
       <div>
-        <label className="mb-1 block font-medium">
-          Year <span className="text-neutral-400">({facets.yearMin}–{facets.yearMax})</span>
+        <label className="mb-1 flex justify-between font-medium">
+          <span>Year</span>
+          <span className="text-brand">
+            {yearLow} – {yearHigh}
+          </span>
         </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            inputMode="numeric"
-            placeholder="from"
-            value={filters.yearMin ?? ""}
-            onChange={(e) => onChange({ yearMin: e.target.value ? Number(e.target.value) : null })}
-            className="w-full rounded-md border border-neutral-300 bg-transparent px-2 py-1.5 dark:border-neutral-700"
-          />
-          <span className="text-neutral-400">–</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            placeholder="to"
-            value={filters.yearMax ?? ""}
-            onChange={(e) => onChange({ yearMax: e.target.value ? Number(e.target.value) : null })}
-            className="w-full rounded-md border border-neutral-300 bg-transparent px-2 py-1.5 dark:border-neutral-700"
-          />
-        </div>
+        <DualRange
+          min={yearMinBound}
+          max={yearMaxBound}
+          step={1}
+          low={yearLow}
+          high={yearHigh}
+          onChange={(lo, hi) =>
+            onChange({
+              yearMin: lo <= yearMinBound ? null : lo,
+              yearMax: hi >= yearMaxBound ? null : hi
+            })
+          }
+        />
       </div>
 
       <div>

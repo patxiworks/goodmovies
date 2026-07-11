@@ -20,9 +20,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold tracking-tight">Browse all movies</h1>
-      </div>
+      <h1 className="mb-1 text-2xl font-bold tracking-tight">Browse all movies</h1>
       <Gallery movies={movies} facets={facets} />
     </div>
   );

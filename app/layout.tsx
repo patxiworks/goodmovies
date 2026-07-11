@@ -52,7 +52,7 @@ export default async function RootLayout({
             <nav className="flex items-center gap-1 text-sm sm:gap-2">
               {signedIn && (
                 <>
-                  <NavItem href="/shared" label="Shared" icon={<IconShared />} badge={<SharedBadge />} />
+                  <NavItem href="/shared" label="Recommends" icon={<IconShared />} badge={<SharedBadge />} />
                   <NavItem href="/groups" label="Groups" icon={<IconGroups />} />
                   <NavItem href="/dashboard/propose" label="Propose" icon={<IconPropose />} />
                   {isAdmin && <NavItem href="/admin" label="Review" icon={<IconReview />} />}
